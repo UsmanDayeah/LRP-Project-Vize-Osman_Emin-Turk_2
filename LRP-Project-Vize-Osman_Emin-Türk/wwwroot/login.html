@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LRP CORE - Sisteme Giriş</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --sidebar-dark: #111827;
+            --accent-blue: #38bdf8;
+            --text-gray: #94a3b8;
+            --text-bright: #e2e8f0;
+        }
+
+        body {
+            background: var(--bg-dark);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-bright);
+            margin: 0;
+        }
+
+        /* YENİ: Kopyalama ve İmleç Değişimini Engelleyen Stil */
+        .no-select {
+            cursor: default !important;
+            user-select: none !important;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 24px;
+            background: var(--card-dark);
+            border: 1px solid #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+            .login-header i {
+                font-size: 48px;
+                color: var(--accent-blue);
+                margin-bottom: 15px;
+                display: block;
+            }
+
+            .login-header h2 {
+                font-weight: 800;
+                letter-spacing: -1px;
+                color: white;
+            }
+
+            .login-header p {
+                color: var(--text-gray);
+                font-size: 0.95rem;
+            }
+
+        .form-label {
+            color: var(--text-gray);
+            font-weight: 500;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .input-group-text {
+            background: #0f172a !important;
+            border: 1px solid #334155;
+            border-right: none;
+            color: var(--text-gray);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .form-control {
+            background: #0f172a !important;
+            border: 1px solid #334155;
+            color: white !important;
+            padding: 12px 15px;
+            border-radius: 0 12px 12px 0;
+            transition: 0.3s;
+        }
+
+            .form-control:focus {
+                border-color: var(--accent-blue);
+                box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+                outline: none;
+            }
+
+            .form-control::placeholder {
+                color: #475569;
+            }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border: none;
+            color: #0f172a;
+            font-weight: 700;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+            .btn-primary:hover {
+                background: #7dd3fc;
+                transform: translateY(-2px);
+                box-shadow: 0 10px 20px -5px rgba(56, 189, 248, 0.4);
+            }
+
+        .alert {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-card">
+        <div class="login-header">
+            <i class="fas fa-terminal no-select"></i>
+            <h2 class="no-select">LRP CORE</h2>
+            <p class="no-select">Laboratuvar Kaynak Planlama Sistemi</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label no-select">Kullanıcı Erişimi</label>
+            <div class="input-group">
+                <span class="input-group-text no-select"><i class="fas fa-user-circle"></i></span>
+                <input type="text" id="username" class="form-control" placeholder="Öğrenci no" required>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label no-select">Güvenlik Anahtarı</label>
+            <div class="input-group">
+                <span class="input-group-text no-select"><i class="fas fa-key"></i></span>
+                <input type="password" id="password" class="form-control" placeholder="******" required>
+            </div>
+        </div>
+
+        <button onclick="handleLogin()" class="btn btn-primary w-100">
+            <i class="fas fa-shield-alt me-2"></i> Sisteme Bağlan
+        </button>
+
+        <div id="alertBox" class="alert d-none"></div>
+    </div>
+
+    <script>
+        async function handleLogin() {
+            const userVal = document.getElementById('username').value;
+            const passVal = document.getElementById('password').value;
+            const alertBox = document.getElementById('alertBox');
+
+            if (!userVal.trim() || !passVal.trim()) {
+                alertBox.textContent = "Lütfen tüm alanları doldurun!";
+                alertBox.classList.remove('d-none');
+                return;
+            }
+
+            alertBox.classList.add('d-none');
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Username: userVal, Password: passVal })
+                });
+
+                const result = await response.json();
+
+                if (response.ok && result.success) {
+                    localStorage.setItem('userRole', result.role);
+                    localStorage.setItem('userName', result.fullName);
+                    localStorage.setItem('username', result.username);
+
+                    if (result.role === "Admin") {
+                        window.location.href = "index.html";
+                    } else {
+                        window.location.href = "student.html";
+                    }
+                } else {
+                    alertBox.textContent = result.message || "Erişim reddedildi!";
+                    alertBox.classList.remove('d-none');
+                }
+            } catch (error) {
+                alertBox.textContent = "Bağlantı hatası: Sunucuya ulaşılamıyor!";
+                alertBox.classList.remove('d-none');
+            }
+        }
+
+        document.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                handleLogin();
+            }
+        });
+    </script>
+</body>
+</html>

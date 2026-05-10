@@ -1,0 +1,611 @@
+﻿<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LRP CORE - Admin Paneli</title>
+
+    <script>
+        (function () {
+            const role = localStorage.getItem('userRole');
+            if (role !== 'Admin') {
+                window.location.replace('login.html');
+            } else {
+                document.documentElement.style.visibility = 'hidden';
+            }
+        })();
+    </script>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --sidebar-dark: #111827;
+            --accent-blue: #38bdf8;
+            --text-gray: #94a3b8;
+            --text-bright: #e2e8f0;
+            --danger-red: #f87171;
+            --hover-orange: #fb923c;
+        }
+
+        body {
+            display: flex;
+            min-height: 100vh;
+            background: var(--bg-dark);
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            margin: 0;
+        }
+
+        #sidebar {
+            width: 260px;
+            background: var(--sidebar-dark);
+            border-right: 1px solid #334155;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+        }
+
+            #sidebar h4 {
+                font-weight: 800;
+                color: var(--accent-blue);
+                padding-bottom: 20px;
+                border-bottom: 1px solid #334155;
+                cursor: default;
+                user-select: none;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+        .nav-link {
+            color: var(--text-gray);
+            border-radius: 12px;
+            margin-bottom: 8px;
+            padding: 12px 15px;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+            .nav-link:hover, .nav-link.active {
+                background: rgba(56, 189, 248, 0.1);
+                color: var(--accent-blue);
+                transform: translateX(5px);
+            }
+
+        .btn-logout-special {
+            background: var(--danger-red) !important;
+            color: #0f172a !important;
+            font-weight: 700 !important;
+            margin-top: 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 12px;
+            text-decoration: none;
+        }
+
+            .btn-logout-special:hover {
+                background: var(--hover-orange) !important;
+                color: white !important;
+                transform: translateY(-2px) scale(1.02);
+                box-shadow: 0 10px 20px -5px rgba(248, 113, 113, 0.4);
+            }
+
+        .content {
+            flex: 1;
+            padding: 40px;
+        }
+
+        .page-animate {
+            animation: slideUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--card-dark);
+            border: 1px solid #334155;
+            border-radius: 20px;
+            color: white;
+        }
+
+        .table-container {
+            background: var(--card-dark);
+            border-radius: 20px;
+            border: 1px solid #334155;
+            overflow: hidden;
+        }
+
+        .table tr, .table td, .table th {
+            background-color: var(--card-dark) !important;
+            border-bottom: 1px solid #334155;
+            color: #f1f5f9 !important;
+            vertical-align: middle;
+            padding: 15px;
+        }
+
+        .clickable-row {
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+            .clickable-row:hover {
+                background-color: rgba(56, 189, 248, 0.05) !important;
+            }
+
+        .form-control, .form-select {
+            background: #0f172a !important;
+            border: 1px solid #334155;
+            color: white !important;
+            border-radius: 10px;
+        }
+
+        /* Checkbox stili */
+        .form-check-input {
+            background-color: #0f172a;
+            border-color: #334155;
+        }
+
+            .form-check-input:checked {
+                background-color: var(--accent-blue);
+                border-color: var(--accent-blue);
+            }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            border: none;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        .btn-close {
+            filter: invert(1) grayscale(100%) brightness(200%);
+            opacity: 0.8;
+        }
+
+        .detail-card {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .detail-label {
+            color: var(--text-gray);
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .detail-value {
+            color: white;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .section-header {
+            margin-bottom: 2rem;
+            cursor: default;
+            user-select: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar">
+        <h4><i class="fas fa-terminal"></i>LRP CORE</h4>
+        <ul class="nav flex-column mt-4 mb-auto">
+            <li class="nav-item"><a class="nav-link active" onclick="handleMenuClick(this, 'labs')"><i class="fas fa-layer-group"></i> Laboratuvarlar</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="handleMenuClick(this, 'computers')"><i class="fas fa-microchip"></i> Bilgisayarlar</a></li>
+            <li class="nav-item"><a class="nav-link" onclick="handleMenuClick(this, 'assignments')"><i class="fas fa-user-shield"></i> Atamalar</a></li>
+        </ul>
+        <div class="mt-auto pt-3 border-top border-secondary border-opacity-25">
+            <a class="btn-logout-special" href="login.html" onclick="localStorage.clear()">
+                <i class="fas fa-sign-out-alt"></i> Güvenli Çıkış
+            </a>
+        </div>
+    </div>
+
+    <div class="content" id="main-content"></div>
+
+    <div class="modal fade" id="viewDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card p-3 page-animate">
+                <div class="modal-header border-bottom-0"><h5 id="viewTitle" class="fw-bold">Detaylar</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body" id="viewDetailsBody"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editLabModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card p-3 page-animate">
+                <div class="modal-header border-bottom-0"><h5>Laboratuvar Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="editLabId">
+                    <div class="mb-3"><label class="form-label">Laboratuvar Adı</label><input type="text" id="editLabName" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Konum</label><input type="text" id="editLabLoc" class="form-control" required></div>
+                </div>
+                <div class="modal-footer border-0"><button type="button" onclick="updateLab()" class="btn btn-primary w-100">Bilgileri Güncelle</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editPcModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card p-3 page-animate">
+                <div class="modal-header border-bottom-0"><h5>Donanım Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="editPcId">
+                    <div class="row g-3">
+                        <div class="col-md-12"><label class="form-label">Marka</label><input type="text" id="editPcBrand" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">İşlemci</label><input type="text" id="editPcCpu" class="form-control" required></div>
+                        <div class="col-md-6"><label class="form-label">RAM (GB)</label><input type="text" id="editPcRam" class="form-control" required></div>
+
+                        <div class="col-md-6">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="editPcHasHdmi">
+                                <label class="form-check-label" for="editPcHasHdmi">HDMI Mevcut</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="editPcHasVeyon">
+                                <label class="form-check-label" for="editPcHasVeyon">Veyon Cloud</label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 mt-4 p-3 border border-secondary rounded" style="background: rgba(56, 189, 248, 0.05);">
+                            <label class="form-label text-info"><i class="fas fa-exchange-alt me-1"></i> Laboratuvar Değiştir</label>
+                            <select id="editPcLabSelect" class="form-select" required></select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-0"><button type="button" onclick="updateComputer()" class="btn btn-primary w-100">Donanımı Güncelle</button></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="editAssignmentModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content card p-3 page-animate">
+                <div class="modal-header border-bottom-0"><h5>Zimmet Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+                <div class="modal-body">
+                    <input type="hidden" id="editAssignPcId">
+                    <div class="mb-3"><label class="form-label">Öğrenci No</label><input type="text" id="editStNo" class="form-control" required></div>
+                    <div class="mb-3"><label class="form-label">Ad Soyad</label><input type="text" id="editStName" class="form-control" required></div>
+                    <div id="quickAssignSection" class="mt-4 p-3 border border-secondary rounded" style="background: rgba(56, 189, 248, 0.05);">
+                        <label class="form-label text-info"><i class="fas fa-sync-alt me-1"></i> PC Değiştir</label>
+                        <select id="quickPcSelect" class="form-select mb-2"></select>
+                    </div>
+                </div>
+                <div class="modal-footer border-0"><button type="button" onclick="updateAssignmentAndChangePC()" class="btn btn-primary w-100">Kaydet</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let editLabModal, editPcModal, editAssignmentModal, viewDetailsModal;
+        let currentPage = '';
+
+        window.onload = () => {
+            const role = localStorage.getItem('userRole');
+            if (role !== 'Admin') return;
+            document.documentElement.style.visibility = 'visible';
+
+            loadPage('labs');
+
+            editLabModal = new bootstrap.Modal(document.getElementById('editLabModal'));
+            editPcModal = new bootstrap.Modal(document.getElementById('editPcModal'));
+            editAssignmentModal = new bootstrap.Modal(document.getElementById('editAssignmentModal'));
+            viewDetailsModal = new bootstrap.Modal(document.getElementById('viewDetailsModal'));
+        };
+
+        function handleMenuClick(el, page) {
+            if (currentPage === page) return;
+            document.querySelectorAll('.nav-link').forEach(link => link.classList.remove('active'));
+            el.classList.add('active');
+            loadPage(page);
+        }
+
+        async function loadPage(page) {
+            currentPage = page;
+            const content = document.getElementById('main-content');
+            content.classList.remove('page-animate');
+            void content.offsetWidth;
+            content.classList.add('page-animate');
+            content.innerHTML = '';
+
+            if (page === 'labs') {
+                content.innerHTML = `<h3 class="section-header">Laboratuvar Havuzu</h3>
+                                    <div class="card p-4 mb-5"><div class="row g-3">
+                                        <div class="col-md-5"><label class="form-label">Lab Adı</label><input type="text" id="labName" class="form-control" required></div>
+                                        <div class="col-md-5"><label class="form-label">Konum</label><input type="text" id="labLoc" class="form-control" required></div>
+                                        <div class="col-md-2 d-flex align-items-end"><button onclick="saveLab()" class="btn btn-primary w-100">Ekle</button></div>
+                                    </div></div><div id="labList" class="table-container"></div>`;
+                listLabs();
+            } else if (page === 'computers') {
+                const res = await fetch('/api/labs'); const labs = await res.json();
+                let labOptions = labs.map(l => `<option value="${l.id}">${l.name}</option>`).join('') || `<option disabled>Önce Lab Ekle</option>`;
+                content.innerHTML = `<h3 class="section-header">Envanter Yönetimi</h3>
+                                    <div class="card p-4 mb-5">
+                                        <div class="row g-3">
+                                            <div class="col-md-3"><label class="form-label">Laboratuvar</label><select id="pcLab" class="form-select" required>${labOptions}</select></div>
+                                            <div class="col-md-3"><label class="form-label">Marka</label><input type="text" id="pcBrand" class="form-control" required></div>
+                                            <div class="col-md-3"><label class="form-label">İşlemci</label><input type="text" id="pcCpu" class="form-control" required></div>
+                                            <div class="col-md-3"><label class="form-label">RAM (GB)</label><input type="text" id="pcRam" class="form-control" required></div>
+
+                                            <div class="col-md-3">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="pcHasHdmi">
+                                                    <label class="form-check-label" for="pcHasHdmi">HDMI Girişi Var</label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-check mt-2">
+                                                    <input class="form-check-input" type="checkbox" id="pcHasVeyon">
+                                                    <label class="form-check-label" for="pcHasVeyon">Veyon Cloud Var</label>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-12"><button onclick="saveComputer()" class="btn btn-primary px-5">Donanımı Kaydet</button></div>
+                                        </div>
+                                    </div><div id="pcList" class="table-container"></div>`;
+                listComputers();
+            } else if (page === 'assignments') {
+                const res = await fetch('/api/computers'); const pcs = await res.json();
+                let pcOptions = pcs.filter(p => !p.assignedUserId).map(p => `<option value="${p.id}">${p.assetCode}</option>`).join('');
+                content.innerHTML = `<h3 class="section-header">Zimmet ve Atama</h3>
+                                    <div class="card p-4 mb-5"><div class="row g-3">
+                                        <div class="col-md-4"><label class="form-label">Cihaz Seçin</label><select id="assignPc" class="form-select" required>${pcOptions || '<option disabled>Boşta Cihaz Yok</option>'}</select></div>
+                                        <div class="col-md-3"><label class="form-label">Öğrenci No</label><input type="text" id="stNo" class="form-control" required></div>
+                                        <div class="col-md-3"><label class="form-label">Ad Soyad</label><input type="text" id="stName" class="form-control" required></div>
+                                        <div class="col-md-2 d-flex align-items-end"><button onclick="makeAssignment()" class="btn btn-primary w-100">Atama Yap</button></div>
+                                    </div></div><div id="assignmentList" class="table-container"></div>`;
+                listAssignments();
+            }
+        }
+
+        // --- Yardımcı Fonksiyonlar ---
+
+        async function listLabs() {
+            const res = await fetch('/api/labs'); const data = await res.json();
+            const labListDiv = document.getElementById('labList');
+            if (data.length === 0) {
+                labListDiv.innerHTML = '<div class="p-5 text-center text-secondary opacity-75"><i class="fas fa-layer-group fa-2x mb-3"></i><br>Henüz laboratuvar eklenmemiş.</div>';
+                return;
+            }
+            let html = '<table class="table"><thead><tr><th>ID</th><th>LAB ADI</th><th>KONUM</th><th class="text-center">İŞLEM</th></tr></thead><tbody>';
+            data.forEach(l => {
+                html += `<tr class="clickable-row" onclick='viewLabDetails(${JSON.stringify(l).replace(/"/g, '&quot;')})'>
+                                    <td>#${l.id}</td><td>${l.name}</td><td>${l.location}</td>
+                                    <td class="text-center">
+                                        <button onclick="event.stopPropagation(); openLabEditModal(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="btn btn-sm text-info border-0"><i class="fas fa-edit"></i></button>
+                                        <button onclick="event.stopPropagation(); deleteLab(${l.id})" class="btn btn-sm text-danger border-0"><i class="fas fa-trash"></i></button>
+                                    </td></tr>`;
+            });
+            labListDiv.innerHTML = html + '</tbody></table>';
+        }
+
+        function viewLabDetails(lab) {
+            document.getElementById('viewTitle').innerHTML = `<i class="fas fa-layer-group text-info me-2"></i>Laboratuvar Detayı`;
+            let detailsHtml = `
+                                <div class="detail-card"><div class="detail-label">Laboratuvar Adı</div><div class="detail-value text-info fw-bold">${lab.name}</div></div>
+                                <div class="detail-card"><div class="detail-label">Konum / Oda</div><div class="detail-value">${lab.location}</div></div>
+                                <div class="detail-card"><div class="detail-label">Sistem ID</div><div class="detail-value">#${lab.id}</div></div>
+                            `;
+            document.getElementById('viewDetailsBody').innerHTML = detailsHtml;
+            viewDetailsModal.show();
+        }
+
+        async function listComputers() {
+            const res = await fetch('/api/computers'); const data = await res.json();
+            const pcListDiv = document.getElementById('pcList');
+            if (data.length === 0) {
+                pcListDiv.innerHTML = '<div class="p-5 text-center text-secondary opacity-75"><i class="fas fa-microchip fa-2x mb-3"></i><br>Kayıtlı bilgisayar bulunmuyor.</div>';
+                return;
+            }
+            let html = '<table class="table"><thead><tr><th>PC KODU</th><th>MARKA</th><th>DURUM</th><th class="text-center">İŞLEM</th></tr></thead><tbody>';
+            data.forEach(c => {
+                const displayCode = c.assetCode ? `<span class="badge bg-info text-dark">${c.assetCode}</span>` : `<span class="text-danger small">Laba Ekle!</span>`;
+                html += `<tr class="clickable-row" onclick='viewPcDetails(${JSON.stringify(c).replace(/"/g, '&quot;')})'>
+                                    <td>${displayCode}</td><td>${c.brand}</td>
+                                    <td>${c.assignedUserId ? '<span class="badge bg-secondary">Dolu</span>' : '<span class="badge bg-success">Müsait</span>'}</td>
+                                    <td class="text-center">
+                                        <button onclick="event.stopPropagation(); openPcEditModal(${JSON.stringify(c).replace(/"/g, '&quot;')})" class="btn btn-sm text-info border-0"><i class="fas fa-cog"></i></button>
+                                        <button onclick="event.stopPropagation(); deleteComputer(${c.id})" class="btn btn-sm text-danger border-0"><i class="fas fa-trash"></i></button>
+                                    </td></tr>`;
+            });
+            pcListDiv.innerHTML = html + '</tbody></table>';
+        }
+
+        // PC Detay Ekranı (Öğrenci ekranında da bu mantığı kullanın)
+        function viewPcDetails(pc) {
+            document.getElementById('viewTitle').innerHTML = `<i class="fas fa-microchip text-info me-2"></i>Cihaz Detayı`;
+
+            // HDMI ve Veyon simgelerini hazırla
+            const hdmiIcon = pc.hasHdmi ? '<i class="fas fa-check-circle text-success"></i>' : '<i class="fas fa-times-circle text-danger"></i>';
+            const veyonIcon = pc.hasVeyon ? '<i class="fas fa-check-circle text-success"></i>' : '<i class="fas fa-times-circle text-danger"></i>';
+
+            let detailsHtml = `
+                                <div class="detail-card"><div class="detail-label">PC Kodu</div><div class="detail-value text-info fw-bold">${pc.assetCode || 'Atanmamış'}</div></div>
+                                <div class="detail-card"><div class="detail-label">Donanım Bilgisi</div><div class="detail-value">${pc.brand} - ${pc.processor} (${pc.ram} GB RAM)</div></div>
+                                <div class="row px-2">
+                                    <div class="col-6 p-1">
+                                        <div class="detail-card mb-0"><div class="detail-label">HDMI</div><div class="detail-value">${hdmiIcon}</div></div>
+                                    </div>
+                                    <div class="col-6 p-1">
+                                        <div class="detail-card mb-0"><div class="detail-label">VEYON</div><div class="detail-value">${veyonIcon}</div></div>
+                                    </div>
+                                </div>
+                                <div class="detail-card mt-2" style="border-left-color: ${pc.assignedUserId ? '#38bdf8' : '#10b981'}">
+                                    <div class="detail-label">Zimmet Durumu</div>
+                                    <div class="detail-value">${pc.assignedUserId ? 'Sorumlu: ' + pc.assignedUser.fullName : 'Kullanıma Hazır'}</div>
+                                </div>`;
+            document.getElementById('viewDetailsBody').innerHTML = detailsHtml;
+            viewDetailsModal.show();
+        }
+
+        async function listAssignments() {
+            const res = await fetch('/api/computers'); const pcs = await res.json();
+            const activeOnes = pcs.filter(p => p.assignedUserId);
+            const assignListDiv = document.getElementById('assignmentList');
+            if (activeOnes.length === 0) {
+                assignListDiv.innerHTML = '<div class="p-5 text-center text-secondary opacity-75"><i class="fas fa-user-shield fa-2x mb-3"></i><br>Aktif zimmet bulunmuyor.</div>';
+                return;
+            }
+            let html = '<table class="table"><thead><tr><th>PC KODU</th><th>SORUMLU</th><th class="text-center">İŞLEM</th></tr></thead><tbody>';
+            activeOnes.forEach(p => {
+                html += `<tr class="clickable-row" onclick='viewStudentDetails(${JSON.stringify(p).replace(/"/g, '&quot;')})'>
+                                    <td><span class="badge bg-primary">${p.assetCode}</span></td><td>${p.assignedUser?.fullName}</td>
+                                    <td class="text-center">
+                                        <button onclick="event.stopPropagation(); openAssignmentEditModal(${JSON.stringify(p).replace(/"/g, '&quot;')})" class="btn btn-sm text-info border-0"><i class="fas fa-user-edit"></i></button>
+                                        <button onclick="event.stopPropagation(); deleteAssignment(${p.id})" class="btn btn-sm text-danger border-0"><i class="fas fa-times-circle"></i></button>
+                                    </td></tr>`;
+            });
+            assignListDiv.innerHTML = html + '</tbody></table>';
+        }
+
+        function viewStudentDetails(pc) {
+            document.getElementById('viewTitle').innerHTML = `<i class="fas fa-user-graduate text-info me-2"></i>Sorumlu Öğrenci Bilgileri`;
+            let detailsHtml = `
+                                <div class="detail-card"><div class="detail-label">Ad Soyad</div><div class="detail-value">${pc.assignedUser?.fullName || 'Bilinmiyor'}</div></div>
+                                <div class="detail-card"><div class="detail-label">Öğrenci No</div><div class="detail-value text-info fw-bold">${pc.assignedUser?.studentNumber || 'Bilinmiyor'}</div></div>
+                                <div class="detail-card" style="border-left-color: #f59e0b"><div class="detail-label">Atanan Cihaz</div><div class="detail-value">${pc.assetCode} (${pc.brand})</div></div>`;
+            document.getElementById('viewDetailsBody').innerHTML = detailsHtml;
+            viewDetailsModal.show();
+        }
+
+        // --- CRUD İşlemleri ---
+
+        async function openLabEditModal(lab) {
+            document.getElementById('editLabId').value = lab.id;
+            document.getElementById('editLabName').value = lab.name;
+            document.getElementById('editLabLoc').value = lab.location;
+            editLabModal.show();
+        }
+
+        async function updateLab() {
+            const id = document.getElementById('editLabId').value;
+            const name = document.getElementById('editLabName').value;
+            const loc = document.getElementById('editLabLoc').value;
+            if (!name.trim() || !loc.trim()) return;
+            await fetch(`/api/labs/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ Name: name, Location: loc }) });
+            editLabModal.hide();
+            listLabs();
+        }
+
+        async function saveLab() {
+            const name = document.getElementById('labName').value;
+            const loc = document.getElementById('labLoc').value;
+            if (!name.trim() || !loc.trim()) return;
+            await fetch('/api/labs', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ Name: name, Location: loc }) });
+            loadPage('labs');
+        }
+
+        async function deleteLab(id) { if (confirm("Laboratuvar silinsin mi?")) { await fetch(`/api/labs/${id}`, { method: 'DELETE' }); listLabs(); } }
+
+        async function openPcEditModal(pc) {
+            document.getElementById('editPcId').value = pc.id;
+            document.getElementById('editPcBrand').value = pc.brand;
+            document.getElementById('editPcCpu').value = pc.processor;
+            document.getElementById('editPcRam').value = pc.ram;
+            document.getElementById('editPcHasHdmi').checked = pc.hasHdmi;
+            document.getElementById('editPcHasVeyon').checked = pc.hasVeyon;
+            const res = await fetch('/api/labs'); const labs = await res.json();
+            document.getElementById('editPcLabSelect').innerHTML = labs.map(l => `<option value="${l.id}" ${l.id === pc.labId ? 'selected' : ''}>${l.name}</option>`).join('');
+            editPcModal.show();
+        }
+
+        async function updateComputer() {
+            const id = document.getElementById('editPcId').value;
+            const data = {
+                Brand: document.getElementById('editPcBrand').value,
+                Processor: document.getElementById('editPcCpu').value,
+                RAM: document.getElementById('editPcRam').value,
+                LabId: parseInt(document.getElementById('editPcLabSelect').value),
+                HasHdmi: document.getElementById('editPcHasHdmi').checked,
+                HasVeyon: document.getElementById('editPcHasVeyon').checked
+            };
+            await fetch(`/api/computers/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            editPcModal.hide();
+            listComputers();
+        }
+
+        async function saveComputer() {
+            const data = {
+                LabId: parseInt(document.getElementById('pcLab').value),
+                Brand: document.getElementById('pcBrand').value,
+                Processor: document.getElementById('pcCpu').value,
+                RAM: document.getElementById('pcRam').value,
+                HasHdmi: document.getElementById('pcHasHdmi').checked,
+                HasVeyon: document.getElementById('pcHasVeyon').checked
+            };
+            await fetch('/api/computers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            loadPage('computers');
+        }
+
+        async function deleteComputer(id) { if (confirm("Bilgisayar silinsin mi?")) { await fetch(`/api/computers/${id}`, { method: 'DELETE' }); listComputers(); } }
+
+        // Zimmet fonksiyonları (Değişmedi)
+        async function openAssignmentEditModal(p) {
+            document.getElementById('editAssignPcId').value = p.id;
+            document.getElementById('editStNo').value = p.assignedUser?.studentNumber || '';
+            document.getElementById('editStName').value = p.assignedUser?.fullName || '';
+            const res = await fetch('/api/computers'); const allPcs = await res.json();
+            const freePcs = allPcs.filter(pc => !pc.assignedUserId);
+            let select = document.getElementById('quickPcSelect');
+            select.innerHTML = `<option value="">${p.assetCode} - ${p.brand} (Mevcut Cihaz)</option>` + freePcs.map(pc => `<option value="${pc.id}">${pc.assetCode} - ${pc.brand}</option>`).join('');
+            editAssignmentModal.show();
+        }
+
+        async function updateAssignmentAndChangePC() {
+            const oldPcId = document.getElementById('editAssignPcId').value;
+            const targetPcId = document.getElementById('quickPcSelect').value;
+            const studentData = { studentNo: document.getElementById('editStNo').value, fullName: document.getElementById('editStName').value };
+            await fetch(`/api/assign/${oldPcId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(studentData) });
+            if (targetPcId) {
+                await fetch(`/api/assign/${oldPcId}`, { method: 'DELETE' });
+                await fetch('/api/assign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ pcId: parseInt(targetPcId), ...studentData }) });
+            }
+            editAssignmentModal.hide();
+            loadPage('assignments');
+        }
+
+        async function makeAssignment() {
+            const data = { pcId: parseInt(document.getElementById('assignPc').value), studentNo: document.getElementById('stNo').value, fullName: document.getElementById('stName').value };
+            await fetch('/api/assign', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+            loadPage('assignments');
+        }
+
+        async function deleteAssignment(id) { if (confirm("Zimmet iptal edilsin mi?")) { await fetch(`/api/assign/${id}`, { method: 'DELETE' }); loadPage('assignments'); } }
+    </script>
+</body>
+</html>
